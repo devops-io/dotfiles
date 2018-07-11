@@ -1,0 +1,278 @@
+;;/usr/local/acl90express
+(setq fi:common-lisp-host "localhost")
+(setq fi:common-lisp-image-name "/usr/local/acl90express/alisp")
+(setq fi:common-lisp-image-file "/usr/local/acl90express/alisp.dxl")
+(setq fi:common-lisp-directory "/usr/local/acl90express")
+(load "/usr/local/acl90express/eli/fi-site-init")
+;; (setq load-path
+;; (cons "/usr/local/acl90express/eli" load-path))
+;; (load "fi-site-init")
+
+;; recent files
+(require 'recentf)
+(recentf-mode 1)
+(setq recentf-max-menu-items 10)
+(global-set-key (kbd "C-x C-r") 'recentf-open-files)
+
+
+
+(defadvice show-paren-function
+      (after show-matching-paren-offscreen activate)
+      "If the matching paren is offscreen, show the matching line in the
+        echo area. Has no effect if the character before point is not of
+        the syntax class ')'."
+      (interactive)
+      (if (not (minibuffer-prompt))
+          (let ((matching-text nil))
+            ;; Only call `blink-matching-open' if the character before point
+            ;; is a close parentheses type character. Otherwise, there's not
+            ;; really any point, and `blink-matching-open' would just echo
+            ;; "Mismatched parentheses", which gets really annoying.
+            (if (char-equal (char-syntax (char-before (point))) ?\))
+                (setq matching-text (blink-matching-open)))
+            (if (not (null matching-text))
+                (message matching-text)))))
+(show-paren-mode)
+
+
+(defun ruby-compile-file ()
+  (interactive)
+  (save-some-buffers 1)
+  (compile (format "ruby %s"
+                   (file-relative-name (buffer-file-name))
+                   ) t))
+(add-hook 'ruby-mode-hook
+          (lambda ()
+            (local-set-key (kbd "C-c C-c") 'ruby-compile-file)))
+
+;;(message (format "show me the %s" (file-relative-name (buffer-file-name))))
+
+(defun cpp-compile-file ()
+  (interactive)
+  (save-some-buffers 1) ;;stop asking to save things all the time
+  (compile (format "/usr/bin/g++ %s && ./a.out"
+		   (file-relative-name (buffer-file-name))
+		   ) t))
+
+(add-hook 'c++-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-c C-c") 'cpp-compile-file)
+))
+
+
+ ;; visuals
+(autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
+(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+
+(setq org-todo-keywords
+'((sequence "BLOCKED" "DOING" "|" "DONE"))
+)
+
+;; "y or n" instead of "yes or no"
+(fset 'yes-or-no-p 'y-or-n-p)
+
+(global-subword-mode)
+
+;;(message (format "%s foo" "zach"))
+;;map function keys
+(define-key global-map [f1] 'copy-to-register)
+(define-key global-map [f2] 'insert-register)
+(define-key global-map [f3] 'point-to-register)
+(define-key global-map [f4] 'jump-to-register)
+(define-key global-map [f5] 'start-kbd-macro)
+(define-key global-map [f6] 'end-kbd-macro)
+
+(setq make-backup-files nil) ;; do not make backup files
+
+(defun zap-up-to-char (arg char)
+  "Kill up to, but not including ARGth occurrence of CHAR.
+Case is ignored if `case-fold-search' is non-nil in the current buffer.
+Goes backward if ARG is negative; error if CHAR not found.
+Ignores CHAR at point."
+  (interactive "p\ncZap up to char: ")
+  (let ((direction (if (>= arg 0) 1 -1)))
+    (kill-region (point)
+		 (progn
+		   (forward-char direction)
+		   (unwind-protect
+		       (search-forward (char-to-string char) nil nil arg)
+		     (backward-char direction))
+		   (point))))) 
+
+
+
+
+(defun what-face (pos)
+  (interactive "d")
+  (let ((face (or (get-char-property (point) 'read-face-name)
+                  (get-char-property (point) 'face))))
+    (if face (message "Face: %s" face) (message "No face at %d" pos))))
+
+(require 'ido)
+(require 'recentf)
+(recentf-mode 1)
+
+(set-background-color "black")
+(set-foreground-color "gray")
+(set-cursor-color "red")
+(setq inhibit-splash-screen t)
+;;(set-default-font "-adobe-courier-medium-r-normal--12-120-75-75-m-70-iso8859-1")
+(tool-bar-mode -1)
+;;;setting mark region
+(setq-default transient-mark-mode nil)
+;;; transparency
+(defun djcb-opacity-modify (&optional dec)
+  "modify the transparency of the emacs frame; if DEC is t,
+    decrease the transparency, otherwise increase it in 10%-steps"
+  (let* ((alpha-or-nil (frame-parameter nil 'alpha)) ; nil before setting
+          (oldalpha (if alpha-or-nil alpha-or-nil 100))
+          (newalpha (if dec (- oldalpha 10) (+ oldalpha 10))))
+    (when (and (>= newalpha frame-alpha-lower-limit) (<= newalpha 100))
+      (modify-frame-parameters nil (list (cons 'alpha newalpha))))))
+
+ ;; C-8 will increase opacity (== decrease transparency)
+ ;; C-9 will decrease opacity (== increase transparency
+ ;; C-0 will returns the state to normal
+
+(defun insert-date()
+  (interactive)
+  (insert (format-time-string "%T"))
+)
+
+(global-set-key (kbd "M-Z") 'zap-up-to-char)
+(global-set-key (kbd "C-x t") 'insert-date)
+(global-set-key (kbd "C-8") '(lambda()(interactive)(djcb-opacity-modify)))
+(global-set-key (kbd "C-9") '(lambda()(interactive)(djcb-opacity-modify t)))
+(global-set-key (kbd "C-0") '(lambda()(interactive)
+                               (modify-frame-parameters nil `((alpha . 100)))))
+
+(djcb-opacity-modify t)
+(add-to-list 'load-path "~/.emacs.d")
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(column-number-mode t)
+ '(safe-local-variable-values (quote ((encoding . utf-8))))
+ '(org-adapt-indentation nil)
+ '(tool-bar-mode nil)
+ '(transient-mark-mode nil))
+
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:family "Ubuntu Mono" :foundry "unknown" :slant normal :weight normal :height 98 :width normal))))
+ '(custom-changed ((t (:background "white" :foreground "white"))))
+ '(font-lock-comment-delimiter-face ((default (:inherit font-lock-comment-face :foreground "red")) (((class color) (min-colors 16)) nil)))
+ '(font-lock-comment-face ((((class color) (min-colors 88) (background dark)) (:foreground "red")))))
+
+(add-to-list 'load-path "~/.emacs.d/yasnippet")
+(require 'yasnippet) 
+(yas/initialize)
+(yas/load-directory "~/.emacs.d/yasnippet/snippets")
+
+; Install mode-compile to give friendlier compiling support!
+(autoload 'mode-compile "mode-compile"
+   "Command to compile current buffer file based on the major mode" t)
+
+;; (defun rails-compile ()
+;;   "run tests if in rails"
+;;   (interactive)
+;;   (message "compiling for rails")
+;;   (re-search-backward "\\bit" nil t)
+;;   (let (
+;;         (line-number (number-to-string (line-number-at-pos)))
+;;         (bundler "/Users/peter/.rvm/gems/ree-1.8.7-2011.02@right_site/bin/bundle")
+;;         (spec (buffer-file-name))
+;;         )
+;;     (compile (concat bundler " exec ../../script/spec " spec " -l " line-number))
+;;     )
+;;   )
+
+(defun normal-ruby-compile ()
+  "Use compile to run ruby programs"
+  (interactive)
+  (save-buffer)
+  (compile (concat "ruby " (buffer-name))))
+
+(defun ruby-compile ()
+  "Run tests if in Rails"
+  (interactive)
+   (if (string= (file-name-extension (buffer-file-name (current-buffer))) "rb")
+       (if (file-exists-p "../../config/environment.rb")
+           (rails-compile)
+         (normal-ruby-compile)
+         )
+     (message "Error: not ruby")
+   )
+ )
+
+(global-set-key (kbd "C-c c") 'mode-compile)
+(autoload 'mode-compile-kill "mode-compile"
+ "Command to kill a compilation launched by `mode-compile'" t)
+(global-set-key (kbd "C-c k") 'mode-compile-kill)
+
+(global-set-key (kbd "C-c y") 'clipboard-yank)
+
+(fset 'copy-to-clipboard
+   [?\M-x ?c ?l ?i ?p ?b ?o ?a ?r ?d ?- ?k ?i ?l ?l ?- ?r ?e ?g ?i ?o ?n ?\C-m ?\C-y])
+
+(global-set-key (kbd "M-c") 'copy-to-clipboard)
+(require 'yaml-mode)
+
+(icomplete-mode 99)
+;;insert date at the cursor
+;;(global-set-key (kdd "C-x t") 'shell command 'date +%T')
+;;(global-set-key (kbd "C-c y") 'clipboard-yank)
+
+;;(global-set-key (kbd "C-c k") 'mode-compile-kill)
+(global-set-key (kbd "C-c i") 'string-insert-rectangle)
+(put 'downcase-region 'disabled nil)
+
+;disable backup
+(setq backup-inhibited t)
+;disable auto save
+(setq auto-save-default nil)
+
+;;compilation mode
+(defun shell-compile ()
+  "use compile to run shell prgrams"
+  (interactive)
+  (save-buffer)
+  (compile (concat "/bin/bash " (buffer-name))))
+
+(add-hook 'sh-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-c C-c") 'shell-compile)))
+
+;;line numbers
+;; (require 'linum)
+;; (global-linum-mode 1)
+;; (add-hook 'linum-before-numbering-hook
+;; 	  (lambda () (setq linum-format "%d ")))
+
+
+;; (defun arrange-frame (w h x y)
+;;   "Set the width, height, and x/y position of the current frame"
+;;   (let ((frame (selected-frame)))
+;;     (delete-other-windows)
+;;     (set-frame-position frame x y)
+;;     (set-frame-size frame w h)))
+
+
+;; (arrange-frame 140 50 200 20)
+
+;; Don't query about the shell process
+;; (set-process-query-on-exit-flag (get-process "shell"))
+;; Don't query about the shell process
+;; (process-kill-without-query (get-process "shell")) 
+ 
+ (defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
+   "Prevent annoying \"Active processes exist\" query when you quit Emacs."
+   (flet ((process-list ())) ad-do-it))
+
+(require 'buffer-move)

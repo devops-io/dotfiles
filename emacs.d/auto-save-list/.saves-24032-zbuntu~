@@ -1,0 +1,8 @@
+/home/zach/chef/cookbooks/apache2/recipes/default.rb
+/home/zach/chef/cookbooks/apache2/recipes/#default.rb#
+/home/zach/chef/cookbooks/apache2/templates/default/apache2.conf.erb
+/home/zach/chef/cookbooks/apache2/templates/default/#apache2.conf.erb#
+/home/zach/chef/cookbooks/apache2/attributes/default.rb
+/home/zach/chef/cookbooks/apache2/attributes/#default.rb#
+/home/zach/chef/notes.org
+/home/zach/chef/#notes.org#

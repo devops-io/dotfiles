@@ -1,0 +1,4 @@
+* dired commands
+** d flags delete x deletes flagged files
+*** https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired-Deletion.html
+* 

@@ -1,0 +1,42 @@
+
+;;line numbers
+;; (require 'linum)
+;; (global-linum-mode 1)
+;; (add-hook 'linum-before-numbering-hook
+;; 	  (lambda () (setq linum-format "%d ")))
+
+
+;; (defun arrange-frame (w h x y)
+;;   "Set the width, height, and x/y position of the current frame"
+;;   (let ((frame (selected-frame)))
+;;     (delete-other-windows)
+;;     (set-frame-position frame x y)
+;;     (set-frame-size frame w h)))
+
+
+;; (arrange-frame 140 50 200 20)
+
+;; Don't query about the shell process
+;; (set-process-query-on-exit-flag (get-process "shell"))
+;; Don't query about the shell process
+;; (process-kill-without-query (get-process "shell")) 
+
+
+;;insert date at the cursor
+;;(global-set-key (kdd "C-x t") 'shell command 'date +%T')
+;;(global-set-key (kbd "C-c y") 'clipboard-yank)
+
+
+;; (defun rails-compile ()
+;;   "run tests if in rails"
+;;   (interactive)
+;;   (message "compiling for rails")
+;;   (re-search-backward "\\bit" nil t)
+;;   (let (
+;;         (line-number (number-to-string (line-number-at-pos)))
+;;         (bundler "/Users/peter/.rvm/gems/ree-1.8.7-2011.02@right_site/bin/bundle")
+;;         (spec (buffer-file-name))
+;;         )
+;;     (compile (concat bundler " exec ../../script/spec " spec " -l " line-number))
+;;     )
+;;   )
