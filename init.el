@@ -217,3 +217,8 @@
 
 (add-to-list 'load-path "~/.emacs.d/multiple-cursors/")
 (require 'multiple-cursors)
+
+(add-to-list 'load-path "~/.emacs.d/go-mode.el/")
+(require 'go-mode)
+(add-to-list 'auto-mode-alist '("\\.go\\'" . go-mode))
+
